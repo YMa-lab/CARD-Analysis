@@ -14,7 +14,7 @@
 
 <meta name="date" content="2021-05-24" />
 
-<title>Mouse Olfactory Bulb Analysis</title>
+<title>SlideseqV2 hippocampus data Analysis</title>
 
 
 
@@ -135,7 +135,7 @@ code span.ot { color: #007020; }
 
 
 <section class="page-header">
-<h1 class="title toc-ignore project-name">Mouse Olfactory Bulb Analysis</h1>
+<h1 class="title toc-ignore project-name">SlideseqV2 hippocampus data Analysis</h1>
 <h4 class="author project-author">Ying Ma</h4>
 <h4 class="date project-date">May 24, 2021</h4>
 </section>
@@ -144,7 +144,7 @@ code span.ot { color: #007020; }
 
 <section class="main-content">
 <p>This is the analysis of the mouse olfactory bulb from Spatial Transcriptomics (ST) technique. The</p>
-<p>Due to the storage issue of github, the single cell RNAseq data that are used as a reference to deconvolute the spatial transcriptomics data is stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google drive</a>. The other data can be downloaded <a href="https://github.com/YingMa0107/CARD-Analysis/tree/master/processed_data/">here</a>.</p>
+<p>Due to the storage issue of github, the data that are needed to run this analsyis are stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google drive</a>.</p>
 <div id="load-the-data" class="section level2">
 <h2>load the data</h2>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">rm</span>(<span class="dt">list=</span><span class="kw">ls</span>())</a>
@@ -152,15 +152,15 @@ code span.ot { color: #007020; }
 <a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">library</span>(pbmcapply)</a>
 <a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">library</span>(CARD)</a>
 <a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">### load the single cell RNA-seq data used as the reference for deconvolution</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">load</span>(<span class="st">&quot;./MOB.dge.sceset.RData&quot;</span>)</a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">load</span>(<span class="st">&quot;./Hippocampus.dge.sceset.RData&quot;</span>)</a>
 <a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">### load the spatial data </span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">load</span>(<span class="st">&quot;./Rep12_MOB_count_matrix-1.RData&quot;</span>)</a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">load</span>(<span class="st">&quot;./slideseqV2.count.RData&quot;</span>)</a>
 <a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### set paramaters</span></a>
 <a class="sourceLine" id="cb1-10" data-line-number="10">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
 <a class="sourceLine" id="cb1-11" data-line-number="11">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
 <a class="sourceLine" id="cb1-12" data-line-number="12">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">pData</span>(eset)<span class="op">$</span>cellType))</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(MOB_raw)</a></code></pre></div>
+<a class="sourceLine" id="cb1-13" data-line-number="13">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
+<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(slideseqV2)</a></code></pre></div>
 </div>
 <div id="deconvolution-with-card" class="section level2">
 <h2>Deconvolution with CARD</h2>
@@ -168,44 +168,89 @@ code span.ot { color: #007020; }
 <a class="sourceLine" id="cb2-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">createCARDObject</span>(</a>
 <a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">exprs</span>(eset),</a>
 <a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">pData</span>(eset),</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> MOB_raw,</a>
+<a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> slideseqV2,</a>
 <a class="sourceLine" id="cb2-6" data-line-number="6">    <span class="dt">spatial_location =</span> location,</a>
 <a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">ct.varname =</span> ct.varname,</a>
 <a class="sourceLine" id="cb2-8" data-line-number="8">    <span class="dt">ct.select =</span> ct.select,</a>
 <a class="sourceLine" id="cb2-9" data-line-number="9">    <span class="dt">sample.varname =</span> sample.varname,</a>
 <a class="sourceLine" id="cb2-10" data-line-number="10">    <span class="dt">minCountGene =</span> <span class="dv">100</span>,</a>
 <a class="sourceLine" id="cb2-11" data-line-number="11">    <span class="dt">minCountSpot =</span><span class="dv">5</span>) </a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt; ## QC on scRNASeq dataset! ...</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt; ## QC on spatially-resolved dataset! ...</span></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="co">##### CARD deconvolution</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">CARD_obj =<span class="st"> </span><span class="kw">CARD_deconvolution</span>(CARD_obj)</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="co">#&gt; ## create reference matrix from scRNASeq...</span></a>
-<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">#&gt; ## Select Informative Genes! ...</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18"><span class="co">#&gt; ## Deconvolution Starts! ...</span></a>
-<a class="sourceLine" id="cb2-19" data-line-number="19"><span class="co">#&gt; ## Deconvolution Finish! ...</span></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>Proportion_CARD,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="co">#&gt;                 GC        PGC       M/TC         OSNs     EPL-IN</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"><span class="co">#&gt; Min.    0.01341823 0.01035225 0.05004014 5.957572e-09 0.01056975</span></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="co">#&gt; 1st Qu. 0.08183586 0.12702289 0.17966665 5.206413e-06 0.04322289</span></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24"><span class="co">#&gt; Median  0.16752017 0.20202116 0.28780161 1.238558e-04 0.06963718</span></a>
-<a class="sourceLine" id="cb2-25" data-line-number="25"><span class="co">#&gt; Mean    0.27225879 0.23832364 0.33712697 7.556895e-02 0.07672163</span></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26"><span class="co">#&gt; 3rd Qu. 0.46763486 0.34825533 0.47535237 6.704388e-02 0.10130213</span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27"><span class="co">#&gt; Max.    0.84165871 0.60355723 0.87792580 6.064774e-01 0.25047960</span></a></code></pre></div>
+<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">##### delete the original file to save the memory</span></a>
+<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="kw">rm</span>(eset)</a>
+<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="kw">rm</span>(location)</a>
+<a class="sourceLine" id="cb2-15" data-line-number="15"><span class="kw">rm</span>(slideseqV2)</a>
+<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="kw">gc</span>()</a>
+<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">##### CARD deconvolution</span></a>
+<a class="sourceLine" id="cb2-18" data-line-number="18">CARD_obj =<span class="st"> </span><span class="kw">CARD_deconvolution</span>(CARD_obj)</a>
+<a class="sourceLine" id="cb2-19" data-line-number="19"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>Proportion_CARD,<span class="dv">2</span>,summary))</a>
+<a class="sourceLine" id="cb2-20" data-line-number="20">           Astrocyte          CA1          CA3 Cajal_Retzius      Choroid</a>
+<a class="sourceLine" id="cb2-21" data-line-number="21">Min.    <span class="fl">6.549115e-09</span> <span class="fl">3.342583e-07</span> <span class="fl">1.039900e-07</span>  <span class="fl">2.289722e-05</span> <span class="fl">1.400082e-09</span></a>
+<a class="sourceLine" id="cb2-22" data-line-number="22">1st Qu. <span class="fl">3.946229e-02</span> <span class="fl">1.543485e-02</span> <span class="fl">1.959387e-02</span>  <span class="fl">3.498084e-02</span> <span class="fl">7.285443e-03</span></a>
+<a class="sourceLine" id="cb2-23" data-line-number="23">Median  <span class="fl">1.265623e-01</span> <span class="fl">3.409539e-02</span> <span class="fl">4.399537e-02</span>  <span class="fl">5.956342e-02</span> <span class="fl">2.043235e-02</span></a>
+<a class="sourceLine" id="cb2-24" data-line-number="24">Mean    <span class="fl">1.991895e-01</span> <span class="fl">4.417949e-02</span> <span class="fl">5.716646e-02</span>  <span class="fl">6.355440e-02</span> <span class="fl">3.007703e-02</span></a>
+<a class="sourceLine" id="cb2-25" data-line-number="25">3rd Qu. <span class="fl">3.143433e-01</span> <span class="fl">6.066588e-02</span> <span class="fl">7.874296e-02</span>  <span class="fl">8.500185e-02</span> <span class="fl">4.026790e-02</span></a>
+<a class="sourceLine" id="cb2-26" data-line-number="26">Max.    <span class="fl">9.701665e-01</span> <span class="fl">3.325204e-01</span> <span class="fl">5.082367e-01</span>  <span class="fl">3.799464e-01</span> <span class="fl">6.277922e-01</span></a>
+<a class="sourceLine" id="cb2-27" data-line-number="27">              Denate Endothelial_Stalk Endothelial_Tip  Entorihinal</a>
+<a class="sourceLine" id="cb2-28" data-line-number="28">Min.    <span class="fl">6.657425e-07</span>      <span class="fl">6.163674e-07</span>    <span class="fl">1.139863e-05</span> <span class="fl">1.726510e-06</span></a>
+<a class="sourceLine" id="cb2-29" data-line-number="29">1st Qu. <span class="fl">1.934296e-02</span>      <span class="fl">7.137680e-03</span>    <span class="fl">1.472043e-02</span> <span class="fl">3.035579e-02</span></a>
+<a class="sourceLine" id="cb2-30" data-line-number="30">Median  <span class="fl">3.832424e-02</span>      <span class="fl">1.313161e-02</span>    <span class="fl">1.960011e-02</span> <span class="fl">6.652472e-02</span></a>
+<a class="sourceLine" id="cb2-31" data-line-number="31">Mean    <span class="fl">5.122470e-02</span>      <span class="fl">1.763982e-02</span>    <span class="fl">2.000251e-02</span> <span class="fl">7.519624e-02</span></a>
+<a class="sourceLine" id="cb2-32" data-line-number="32">3rd Qu. <span class="fl">6.657624e-02</span>      <span class="fl">2.159234e-02</span>    <span class="fl">2.419510e-02</span> <span class="fl">1.093491e-01</span></a>
+<a class="sourceLine" id="cb2-33" data-line-number="33">Max.    <span class="fl">4.374547e-01</span>      <span class="fl">3.277260e-01</span>    <span class="fl">1.743916e-01</span> <span class="fl">4.075676e-01</span></a>
+<a class="sourceLine" id="cb2-34" data-line-number="34">           Ependymal  Interneuron Microglia_Macrophages        Mural</a>
+<a class="sourceLine" id="cb2-35" data-line-number="35">Min.    <span class="fl">4.940973e-08</span> <span class="fl">1.387993e-06</span>          <span class="fl">9.052465e-07</span> <span class="fl">7.783994e-06</span></a>
+<a class="sourceLine" id="cb2-36" data-line-number="36">1st Qu. <span class="fl">6.840735e-03</span> <span class="fl">2.552179e-02</span>          <span class="fl">6.454247e-03</span> <span class="fl">1.763536e-02</span></a>
+<a class="sourceLine" id="cb2-37" data-line-number="37">Median  <span class="fl">1.253260e-02</span> <span class="fl">5.824671e-02</span>          <span class="fl">1.422332e-02</span> <span class="fl">2.553737e-02</span></a>
+<a class="sourceLine" id="cb2-38" data-line-number="38">Mean    <span class="fl">1.904020e-02</span> <span class="fl">7.735546e-02</span>          <span class="fl">4.015820e-02</span> <span class="fl">2.650752e-02</span></a>
+<a class="sourceLine" id="cb2-39" data-line-number="39">3rd Qu. <span class="fl">2.123995e-02</span> <span class="fl">1.073900e-01</span>          <span class="fl">3.480897e-02</span> <span class="fl">3.309739e-02</span></a>
+<a class="sourceLine" id="cb2-40" data-line-number="40">Max.    <span class="fl">7.583645e-01</span> <span class="fl">9.846139e-01</span>          <span class="fl">9.981785e-01</span> <span class="fl">2.545956e-01</span></a>
+<a class="sourceLine" id="cb2-41" data-line-number="41">        Neurogenesis Neuron.Slc17a6 Oligodendrocyte Polydendrocyte</a>
+<a class="sourceLine" id="cb2-42" data-line-number="42">Min.    <span class="fl">3.016224e-06</span>   <span class="fl">8.144565e-06</span>    <span class="fl">1.365415e-07</span>   <span class="fl">7.651204e-07</span></a>
+<a class="sourceLine" id="cb2-43" data-line-number="43">1st Qu. <span class="fl">1.505545e-02</span>   <span class="fl">3.158983e-02</span>    <span class="fl">3.084705e-02</span>   <span class="fl">1.439076e-02</span></a>
+<a class="sourceLine" id="cb2-44" data-line-number="44">Median  <span class="fl">2.435342e-02</span>   <span class="fl">6.115331e-02</span>    <span class="fl">7.147644e-02</span>   <span class="fl">2.352415e-02</span></a>
+<a class="sourceLine" id="cb2-45" data-line-number="45">Mean    <span class="fl">2.616867e-02</span>   <span class="fl">6.722673e-02</span>    <span class="fl">1.599255e-01</span>   <span class="fl">2.538756e-02</span></a>
+<a class="sourceLine" id="cb2-46" data-line-number="46">3rd Qu. <span class="fl">3.429981e-02</span>   <span class="fl">9.328253e-02</span>    <span class="fl">1.825281e-01</span>   <span class="fl">3.288397e-02</span></a>
+<a class="sourceLine" id="cb2-47" data-line-number="47">Max.    <span class="fl">1.774702e-01</span>   <span class="fl">4.313435e-01</span>    <span class="fl">9.992845e-01</span>   <span class="fl">4.629811e-01</span></a></code></pre></div>
 </div>
 <div id="construact-a-refined-spatial-map-by-card" class="section level2">
 <h2>Construact a refined spatial map by CARD</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">##### For example, we set the initial number of grids to be 2000</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">2000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>)<span class="co">## print output</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; ## The rownames of locations are matched ...</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; ## Make grids on new spatial locations ...</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>refined_prop,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt;                 GC        PGC      M/TC        OSNs     EPL-IN</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; Min.    0.07851589 0.09087208 0.1488377 0.003511894 0.03438214</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; 1st Qu. 0.15017764 0.15881733 0.2454581 0.006704725 0.06048406</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt; Median  0.20711106 0.21732364 0.3301476 0.020666297 0.07524423</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10"><span class="co">#&gt; Mean    0.28967101 0.22754708 0.3290853 0.077239654 0.07645695</span></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11"><span class="co">#&gt; 3rd Qu. 0.44621818 0.29124548 0.4083566 0.100845986 0.09023413</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12"><span class="co">#&gt; Max.    0.66667620 0.45268291 0.5762444 0.462801464 0.14476322</span></a></code></pre></div>
+<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">##### There are some locations that are outside of the main circle of the tissue, we should exclude them to avoid its impact on the tissue shape detection</span></a>
+<a class="sourceLine" id="cb3-3" data-line-number="3">exclude =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1209.9x5751.6&quot;</span>,<span class="st">&quot;932.04x5567.2&quot;</span>,<span class="st">&quot;221.35x4978.6&quot;</span>,<span class="st">&quot;803.66x4850.6&quot;</span>,<span class="st">&quot;371.65x4474.5&quot;</span>,<span class="st">&quot;252.32x2760.2&quot;</span>,</a>
+<a class="sourceLine" id="cb3-4" data-line-number="4">            <span class="st">&quot;341.18x2331.2&quot;</span>,<span class="st">&quot;157.22x1996.2&quot;</span>,<span class="st">&quot;465.7x1602&quot;</span>,<span class="st">&quot;1435.2x270.75&quot;</span>,<span class="st">&quot;2100.8x501.66&quot;</span>,<span class="st">&quot;2211.5x153.96&quot;</span>,</a>
+<a class="sourceLine" id="cb3-5" data-line-number="5">            <span class="st">&quot;3853.4x215.24&quot;</span>,<span class="st">&quot;5414.3x970.87&quot;</span>,<span class="st">&quot;1339.1x5019.2&quot;</span>,<span class="st">&quot;1541.6x5370.7&quot;</span>,<span class="st">&quot;1536.8x5341.8&quot;</span>,<span class="st">&quot;1508.8x5254.6&quot;</span>,</a>
+<a class="sourceLine" id="cb3-6" data-line-number="6">            <span class="st">&quot;1498.4x5244.1&quot;</span>,<span class="st">&quot;1593.6x5155.4&quot;</span>,<span class="st">&quot;1607x5144.9&quot;</span>,<span class="st">&quot;1651.8x5064.9&quot;</span>,<span class="st">&quot;1481.5x5229.1&quot;</span>,<span class="st">&quot;1496x5223.5&quot;</span>,</a>
+<a class="sourceLine" id="cb3-7" data-line-number="7">            <span class="st">&quot;1508.4x5212.2&quot;</span>,<span class="st">&quot;1522.7x5210.5&quot;</span>,<span class="st">&quot;685.08x5145.3&quot;</span>,<span class="st">&quot;1518.8x5225.6&quot;</span>)</a>
+<a class="sourceLine" id="cb3-8" data-line-number="8">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">10000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>,<span class="dt">exclude =</span> exclude)<span class="co">## print output</span></a>
+<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>refined_prop,<span class="dv">2</span>,summary))</a>
+<a class="sourceLine" id="cb3-10" data-line-number="10">          Astrocyte         CA1         CA3 Cajal_Retzius      Choroid</a>
+<a class="sourceLine" id="cb3-11" data-line-number="11">Min.    <span class="fl">0.005922897</span> <span class="fl">0.001597862</span> <span class="fl">0.001823296</span>   <span class="fl">0.003806419</span> <span class="fl">0.0007726319</span></a>
+<a class="sourceLine" id="cb3-12" data-line-number="12">1st Qu. <span class="fl">0.114313721</span> <span class="fl">0.022058653</span> <span class="fl">0.029652286</span>   <span class="fl">0.039745235</span> <span class="fl">0.0159930172</span></a>
+<a class="sourceLine" id="cb3-13" data-line-number="13">Median  <span class="fl">0.195383796</span> <span class="fl">0.033973384</span> <span class="fl">0.045541417</span>   <span class="fl">0.056829191</span> <span class="fl">0.0236263402</span></a>
+<a class="sourceLine" id="cb3-14" data-line-number="14">Mean    <span class="fl">0.223420475</span> <span class="fl">0.040306340</span> <span class="fl">0.052396888</span>   <span class="fl">0.058586805</span> <span class="fl">0.0272901642</span></a>
+<a class="sourceLine" id="cb3-15" data-line-number="15">3rd Qu. <span class="fl">0.304613124</span> <span class="fl">0.050348515</span> <span class="fl">0.064235562</span>   <span class="fl">0.071852198</span> <span class="fl">0.0327888184</span></a>
+<a class="sourceLine" id="cb3-16" data-line-number="16">Max.    <span class="fl">0.721814648</span> <span class="fl">0.214190526</span> <span class="fl">0.277532506</span>   <span class="fl">0.181348295</span> <span class="fl">0.3426269220</span></a>
+<a class="sourceLine" id="cb3-17" data-line-number="17">             Denate Endothelial_Stalk Endothelial_Tip Entorihinal   Ependymal</a>
+<a class="sourceLine" id="cb3-18" data-line-number="18">Min.    <span class="fl">0.001492004</span>       <span class="fl">0.001225552</span>     <span class="fl">0.003691385</span> <span class="fl">0.004028136</span> <span class="fl">0.001546125</span></a>
+<a class="sourceLine" id="cb3-19" data-line-number="19">1st Qu. <span class="fl">0.026665035</span>       <span class="fl">0.012139720</span>     <span class="fl">0.016119058</span> <span class="fl">0.036205214</span> <span class="fl">0.011179056</span></a>
+<a class="sourceLine" id="cb3-20" data-line-number="20">Median  <span class="fl">0.039172231</span>       <span class="fl">0.015515290</span>     <span class="fl">0.018723147</span> <span class="fl">0.063983022</span> <span class="fl">0.014191224</span></a>
+<a class="sourceLine" id="cb3-21" data-line-number="21">Mean    <span class="fl">0.047727737</span>       <span class="fl">0.017213807</span>     <span class="fl">0.019177271</span> <span class="fl">0.067869157</span> <span class="fl">0.017652824</span></a>
+<a class="sourceLine" id="cb3-22" data-line-number="22">3rd Qu. <span class="fl">0.057920302</span>       <span class="fl">0.020085270</span>     <span class="fl">0.021359803</span> <span class="fl">0.093526214</span> <span class="fl">0.018326499</span></a>
+<a class="sourceLine" id="cb3-23" data-line-number="23">Max.    <span class="fl">0.278560882</span>       <span class="fl">0.121329785</span>     <span class="fl">0.076191319</span> <span class="fl">0.243323790</span> <span class="fl">0.429642236</span></a>
+<a class="sourceLine" id="cb3-24" data-line-number="24">        Interneuron Microglia_Macrophages       Mural Neurogenesis</a>
+<a class="sourceLine" id="cb3-25" data-line-number="25">Min.    <span class="fl">0.003557874</span>           <span class="fl">0.002610908</span> <span class="fl">0.004385053</span>  <span class="fl">0.001484315</span></a>
+<a class="sourceLine" id="cb3-26" data-line-number="26">1st Qu. <span class="fl">0.036059757</span>           <span class="fl">0.019329866</span> <span class="fl">0.019400466</span>  <span class="fl">0.019128140</span></a>
+<a class="sourceLine" id="cb3-27" data-line-number="27">Median  <span class="fl">0.064367829</span>           <span class="fl">0.030875398</span> <span class="fl">0.024897793</span>  <span class="fl">0.024498384</span></a>
+<a class="sourceLine" id="cb3-28" data-line-number="28">Mean    <span class="fl">0.069242687</span>           <span class="fl">0.045367774</span> <span class="fl">0.024913262</span>  <span class="fl">0.024925895</span></a>
+<a class="sourceLine" id="cb3-29" data-line-number="29">3rd Qu. <span class="fl">0.096064907</span>           <span class="fl">0.052786227</span> <span class="fl">0.029798087</span>  <span class="fl">0.029966835</span></a>
+<a class="sourceLine" id="cb3-30" data-line-number="30">Max.    <span class="fl">0.304925470</span>           <span class="fl">0.509944882</span> <span class="fl">0.097342172</span>  <span class="fl">0.079491193</span></a>
+<a class="sourceLine" id="cb3-31" data-line-number="31">        Neuron.Slc17a6 Oligodendrocyte Polydendrocyte</a>
+<a class="sourceLine" id="cb3-32" data-line-number="32">Min.       <span class="fl">0.003652488</span>      <span class="fl">0.01754259</span>    <span class="fl">0.003042927</span></a>
+<a class="sourceLine" id="cb3-33" data-line-number="33">1st Qu.    <span class="fl">0.034624414</span>      <span class="fl">0.07292051</span>    <span class="fl">0.018300064</span></a>
+<a class="sourceLine" id="cb3-34" data-line-number="34">Median     <span class="fl">0.057579538</span>      <span class="fl">0.11300916</span>    <span class="fl">0.023157172</span></a>
+<a class="sourceLine" id="cb3-35" data-line-number="35">Mean       <span class="fl">0.061045350</span>      <span class="fl">0.17893453</span>    <span class="fl">0.023929035</span></a>
+<a class="sourceLine" id="cb3-36" data-line-number="36">3rd Qu.    <span class="fl">0.081308099</span>      <span class="fl">0.21311882</span>    <span class="fl">0.028546762</span></a>
+<a class="sourceLine" id="cb3-37" data-line-number="37">Max.       <span class="fl">0.187290646</span>      <span class="fl">0.93170656</span>    <span class="fl">0.085738448</span></a></code></pre></div>
 </div>
 </section>
 

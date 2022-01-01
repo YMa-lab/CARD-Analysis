@@ -1,4 +1,4 @@
 # CARD-Analysis
 
-This github provides the code for all experiments in the manuscript
+This github provides the code for all experiments in the manuscript.
 

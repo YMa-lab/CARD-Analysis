@@ -12,7 +12,7 @@
 
 <meta name="author" content="Ying Ma" />
 
-<meta name="date" content="2021-05-24" />
+<meta name="date" content="2022-04-24" />
 
 <title>Mouse Olfactory Bulb Analysis</title>
 
@@ -137,7 +137,7 @@ code span.ot { color: #007020; }
 <section class="page-header">
 <h1 class="title toc-ignore project-name">Mouse Olfactory Bulb Analysis</h1>
 <h4 class="author project-author">Ying Ma</h4>
-<h4 class="date project-date">May 24, 2021</h4>
+<h4 class="date project-date">April 24, 2022</h4>
 </section>
 
 
@@ -151,23 +151,27 @@ code span.ot { color: #007020; }
 <a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(SingleCellExperiment)</a>
 <a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">library</span>(pbmcapply)</a>
 <a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">library</span>(CARD)</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">### load the single cell RNA-seq data used as the reference for deconvolution</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">load</span>(<span class="st">&quot;./MOB.dge.sceset.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">### load the spatial data </span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">load</span>(<span class="st">&quot;./Rep12_MOB_count_matrix-1.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### set paramaters</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">pData</span>(eset)<span class="op">$</span>cellType))</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(MOB_raw)</a></code></pre></div>
+<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">#&gt; Warning in .recacheSubclasses(def@className, def, env): undefined subclass</span></a>
+<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">#&gt; &quot;numericVector&quot; of class &quot;Mnumeric&quot;; definition not updated</span></a>
+<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">#&gt; Warning: replacing previous import 'RcppML::nmf' by 'NMF::nmf' when loading</span></a>
+<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">#&gt; 'CARD'</span></a>
+<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### load the single cell RNA-seq data used as the reference for deconvolution</span></a>
+<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">load</span>(<span class="st">&quot;./MOB.dge.sceset.RData&quot;</span>)</a>
+<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="co">### load the spatial data </span></a>
+<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="kw">load</span>(<span class="st">&quot;./Rep12_MOB_count_matrix-1.RData&quot;</span>)</a>
+<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="co">### set paramaters</span></a>
+<a class="sourceLine" id="cb1-14" data-line-number="14">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
+<a class="sourceLine" id="cb1-15" data-line-number="15">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
+<a class="sourceLine" id="cb1-16" data-line-number="16">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>cellType))</a>
+<a class="sourceLine" id="cb1-17" data-line-number="17">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
+<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(MOB_raw)</a></code></pre></div>
 </div>
 <div id="deconvolution-with-card" class="section level2">
 <h2>Deconvolution with CARD</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">##### create CARD object</span></a>
 <a class="sourceLine" id="cb2-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">createCARDObject</span>(</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">exprs</span>(eset),</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">pData</span>(eset),</a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">assays</span>(sce)<span class="op">$</span>counts,</a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">colData</span>(sce),</a>
 <a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> MOB_raw,</a>
 <a class="sourceLine" id="cb2-6" data-line-number="6">    <span class="dt">spatial_location =</span> location,</a>
 <a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">ct.varname =</span> ct.varname,</a>
@@ -195,7 +199,7 @@ code span.ot { color: #007020; }
 <div id="construact-a-refined-spatial-map-by-card" class="section level2">
 <h2>Construact a refined spatial map by CARD</h2>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">##### For example, we set the initial number of grids to be 2000</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">2000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>)<span class="co">## print output</span></a>
+<a class="sourceLine" id="cb3-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">2000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>,<span class="dt">exclude =</span> <span class="ot">NULL</span>)<span class="co">## print output</span></a>
 <a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; ## The rownames of locations are matched ...</span></a>
 <a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; ## Make grids on new spatial locations ...</span></a>
 <a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>refined_prop,<span class="dv">2</span>,summary))</a>

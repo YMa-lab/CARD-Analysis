@@ -158,7 +158,7 @@ code span.ot { color: #007020; }
 <a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### set paramaters</span></a>
 <a class="sourceLine" id="cb1-10" data-line-number="10">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
 <a class="sourceLine" id="cb1-11" data-line-number="11">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">pData</span>(eset)<span class="op">$</span>cellType))</a>
+<a class="sourceLine" id="cb1-12" data-line-number="12">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>cellType))</a>
 <a class="sourceLine" id="cb1-13" data-line-number="13">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
 <a class="sourceLine" id="cb1-14" data-line-number="14"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(slideseqV2)</a></code></pre></div>
 </div>
@@ -166,8 +166,8 @@ code span.ot { color: #007020; }
 <h2>Deconvolution with CARD</h2>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">##### create CARD object</span></a>
 <a class="sourceLine" id="cb2-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">createCARDObject</span>(</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">exprs</span>(eset),</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">pData</span>(eset),</a>
+<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">assays</span>(sce)<span class="op">$</span>counts,</a>
+<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">colData</span>(sce),</a>
 <a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> slideseqV2,</a>
 <a class="sourceLine" id="cb2-6" data-line-number="6">    <span class="dt">spatial_location =</span> location,</a>
 <a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">ct.varname =</span> ct.varname,</a>
@@ -176,7 +176,7 @@ code span.ot { color: #007020; }
 <a class="sourceLine" id="cb2-10" data-line-number="10">    <span class="dt">minCountGene =</span> <span class="dv">100</span>,</a>
 <a class="sourceLine" id="cb2-11" data-line-number="11">    <span class="dt">minCountSpot =</span><span class="dv">5</span>) </a>
 <a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">##### delete the original file to save the memory</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="kw">rm</span>(eset)</a>
+<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="kw">rm</span>(sce)</a>
 <a class="sourceLine" id="cb2-14" data-line-number="14"><span class="kw">rm</span>(location)</a>
 <a class="sourceLine" id="cb2-15" data-line-number="15"><span class="kw">rm</span>(slideseqV2)</a>
 <a class="sourceLine" id="cb2-16" data-line-number="16"><span class="kw">gc</span>()</a>

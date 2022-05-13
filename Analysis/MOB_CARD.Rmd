@@ -1,0 +1,63 @@
+---
+title: "Mouse Olfactory Bulb Analysis"
+author: "Ying Ma"
+date: April 24, 2022
+output:
+  prettydoc::html_pretty:
+    theme: cayman
+    highlight: github
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This is the analysis of the mouse olfactory bulb from Spatial Transcriptomics (ST) technique. The 
+ 
+Due to the storage issue of github, both the scRNASeq reference data and mouse olfactory bulb ST dataset are stored on the [google drive](https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing). 
+
+## load the data
+
+```{r message=FALSE, warnings=F, eval=T}
+rm(list=ls())
+library(SingleCellExperiment)
+library(pbmcapply)
+library(CARD)
+### load the single cell RNA-seq data used as the reference for deconvolution
+load("./MOB.dge.sceset.RData")
+### load the spatial data 
+load("./Rep12_MOB_count_matrix-1.RData")
+### set paramaters
+ct.varname = "cellType"
+sample.varname = "sampleInfo"
+ct.select = as.character(unique(colData(sce)$cellType))
+location <- cbind.data.frame(x=as.numeric(sapply(strsplit(colnames(MOB_raw),split="x"),"[",1)),y=as.numeric(sapply(strsplit(colnames(MOB_raw),split="x"),"[",2)))
+rownames(location) = colnames(MOB_raw)
+```
+
+## Deconvolution with CARD
+```{r eval=T,warnings=F}
+##### create CARD object
+CARD_obj = createCARDObject(
+	sc_count = assays(sce)$counts,
+	sc_meta = colData(sce),
+	spatial_count = MOB_raw,
+	spatial_location = location,
+	ct.varname = ct.varname,
+	ct.select = ct.select,
+	sample.varname = sample.varname,
+	minCountGene = 100,
+	minCountSpot =5) 
+##### CARD deconvolution
+CARD_obj = CARD_deconvolution(CARD_obj)
+print(apply(CARD_obj@Proportion_CARD,2,summary))
+```
+
+## Construact a refined spatial map by CARD
+```{r eval=T,warnings=F}
+##### For example, we set the initial number of grids to be 2000
+CARD_obj = CARD.imputation(CARD_obj,NumGrids = 2000,ineibor = 10,exclude = NULL)## print output
+print(apply(CARD_obj@refined_prop,2,summary))

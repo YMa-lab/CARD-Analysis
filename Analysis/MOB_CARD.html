@@ -16,30 +16,45 @@
 
 <title>Mouse Olfactory Bulb Analysis</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -48,9 +63,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -135,7 +150,8 @@ code span.ot { color: #007020; }
 
 
 <section class="page-header">
-<h1 class="title toc-ignore project-name">Mouse Olfactory Bulb Analysis</h1>
+<h1 class="title toc-ignore project-name">Mouse Olfactory Bulb
+Analysis</h1>
 <h4 class="author project-author">Ying Ma</h4>
 <h4 class="date project-date">April 24, 2022</h4>
 </section>
@@ -143,73 +159,74 @@ code span.ot { color: #007020; }
 
 
 <section class="main-content">
-<p>This is the analysis of the mouse olfactory bulb from Spatial Transcriptomics (ST) technique. The</p>
-<p>Due to the storage issue of github, both the scRNASeq reference data and mouse olfactory bulb ST dataset are stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google drive</a>.</p>
+<p>This is the analysis of the mouse olfactory bulb from Spatial
+Transcriptomics (ST) technique. The</p>
+<p>Due to the storage issue of github, both the scRNASeq reference data
+and mouse olfactory bulb ST dataset are stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google
+drive</a>.</p>
 <div id="load-the-data" class="section level2">
 <h2>load the data</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">rm</span>(<span class="dt">list=</span><span class="kw">ls</span>())</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(SingleCellExperiment)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">library</span>(pbmcapply)</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">library</span>(CARD)</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">#&gt; Warning in .recacheSubclasses(def@className, def, env): undefined subclass</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="co">#&gt; &quot;numericVector&quot; of class &quot;Mnumeric&quot;; definition not updated</span></a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">#&gt; Warning: replacing previous import 'RcppML::nmf' by 'NMF::nmf' when loading</span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="co">#&gt; 'CARD'</span></a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### load the single cell RNA-seq data used as the reference for deconvolution</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10"><span class="kw">load</span>(<span class="st">&quot;./MOB.dge.sceset.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-11" data-line-number="11"><span class="co">### load the spatial data </span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12"><span class="kw">load</span>(<span class="st">&quot;./Rep12_MOB_count_matrix-1.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13"><span class="co">### set paramaters</span></a>
-<a class="sourceLine" id="cb1-14" data-line-number="14">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
-<a class="sourceLine" id="cb1-15" data-line-number="15">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
-<a class="sourceLine" id="cb1-16" data-line-number="16">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>cellType))</a>
-<a class="sourceLine" id="cb1-17" data-line-number="17">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(MOB_raw),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb1-18" data-line-number="18"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(MOB_raw)</a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SingleCellExperiment)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pbmcapply)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CARD)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Warning: replacing previous import &#39;RcppML::nmf&#39; by &#39;NMF::nmf&#39; when loading</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; &#39;CARD&#39;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="do">### load the single cell RNA-seq data used as the reference for deconvolution</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;./MOB.dge.sceset.RData&quot;</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="do">### load the spatial data </span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;./Rep12_MOB_count_matrix-1.RData&quot;</span>)</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="do">### set paramaters</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ct.varname <span class="ot">=</span> <span class="st">&quot;cellType&quot;</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>sample.varname <span class="ot">=</span> <span class="st">&quot;sampleInfo&quot;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>ct.select <span class="ot">=</span> <span class="fu">as.character</span>(<span class="fu">unique</span>(<span class="fu">colData</span>(sce)<span class="sc">$</span>cellType))</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>location <span class="ot">&lt;-</span> <span class="fu">cbind.data.frame</span>(<span class="at">x=</span><span class="fu">as.numeric</span>(<span class="fu">sapply</span>(<span class="fu">strsplit</span>(<span class="fu">colnames</span>(MOB_raw),<span class="at">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="at">y=</span><span class="fu">as.numeric</span>(<span class="fu">sapply</span>(<span class="fu">strsplit</span>(<span class="fu">colnames</span>(MOB_raw),<span class="at">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(location) <span class="ot">=</span> <span class="fu">colnames</span>(MOB_raw)</span></code></pre></div>
 </div>
 <div id="deconvolution-with-card" class="section level2">
 <h2>Deconvolution with CARD</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">##### create CARD object</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">createCARDObject</span>(</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">assays</span>(sce)<span class="op">$</span>counts,</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">colData</span>(sce),</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> MOB_raw,</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">    <span class="dt">spatial_location =</span> location,</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">ct.varname =</span> ct.varname,</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">    <span class="dt">ct.select =</span> ct.select,</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">    <span class="dt">sample.varname =</span> sample.varname,</a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">    <span class="dt">minCountGene =</span> <span class="dv">100</span>,</a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">    <span class="dt">minCountSpot =</span><span class="dv">5</span>) </a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">#&gt; ## QC on scRNASeq dataset! ...</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="co">#&gt; ## QC on spatially-resolved dataset! ...</span></a>
-<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="co">##### CARD deconvolution</span></a>
-<a class="sourceLine" id="cb2-15" data-line-number="15">CARD_obj =<span class="st"> </span><span class="kw">CARD_deconvolution</span>(CARD_obj)</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="co">#&gt; ## create reference matrix from scRNASeq...</span></a>
-<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">#&gt; ## Select Informative Genes! ...</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18"><span class="co">#&gt; ## Deconvolution Starts! ...</span></a>
-<a class="sourceLine" id="cb2-19" data-line-number="19"><span class="co">#&gt; ## Deconvolution Finish! ...</span></a>
-<a class="sourceLine" id="cb2-20" data-line-number="20"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>Proportion_CARD,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb2-21" data-line-number="21"><span class="co">#&gt;                 GC        PGC       M/TC         OSNs     EPL-IN</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22"><span class="co">#&gt; Min.    0.01341823 0.01035225 0.05004014 5.957572e-09 0.01056975</span></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23"><span class="co">#&gt; 1st Qu. 0.08183586 0.12702289 0.17966665 5.206413e-06 0.04322289</span></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24"><span class="co">#&gt; Median  0.16752017 0.20202116 0.28780161 1.238558e-04 0.06963718</span></a>
-<a class="sourceLine" id="cb2-25" data-line-number="25"><span class="co">#&gt; Mean    0.27225879 0.23832364 0.33712697 7.556895e-02 0.07672163</span></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26"><span class="co">#&gt; 3rd Qu. 0.46763486 0.34825533 0.47535237 6.704388e-02 0.10130213</span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27"><span class="co">#&gt; Max.    0.84165871 0.60355723 0.87792580 6.064774e-01 0.25047960</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">##### create CARD object</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">createCARDObject</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">sc_count =</span> <span class="fu">assays</span>(sce)<span class="sc">$</span>counts,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">sc_meta =</span> <span class="fu">colData</span>(sce),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">spatial_count =</span> MOB_raw,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">spatial_location =</span> location,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ct.varname =</span> ct.varname,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ct.select =</span> ct.select,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample.varname =</span> sample.varname,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">minCountGene =</span> <span class="dv">100</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">minCountSpot =</span><span class="dv">5</span>) </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## QC on scRNASeq dataset! ...</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## QC on spatially-resolved dataset! ...</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="do">##### CARD deconvolution</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">CARD_deconvolution</span>(CARD_obj)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## create reference matrix from scRNASeq...</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Select Informative Genes! ...</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Deconvolution Starts! ...</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Deconvolution Finish! ...</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">apply</span>(CARD_obj<span class="sc">@</span>Proportion_CARD,<span class="dv">2</span>,summary))</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 GC        PGC       M/TC         OSNs     EPL-IN</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Min.    0.01341822 0.01035227 0.05004014 5.957580e-09 0.01056975</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1st Qu. 0.08183580 0.12702296 0.17966672 5.206420e-06 0.04322287</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Median  0.16752018 0.20202122 0.28780169 1.238557e-04 0.06963714</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mean    0.27225877 0.23832365 0.33712701 7.556895e-02 0.07672162</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3rd Qu. 0.46763488 0.34825534 0.47535234 6.704389e-02 0.10130208</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Max.    0.84165867 0.60355729 0.87792588 6.064774e-01 0.25047956</span></span></code></pre></div>
 </div>
 <div id="construact-a-refined-spatial-map-by-card" class="section level2">
 <h2>Construact a refined spatial map by CARD</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">##### For example, we set the initial number of grids to be 2000</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">2000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>,<span class="dt">exclude =</span> <span class="ot">NULL</span>)<span class="co">## print output</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3"><span class="co">#&gt; ## The rownames of locations are matched ...</span></a>
-<a class="sourceLine" id="cb3-4" data-line-number="4"><span class="co">#&gt; ## Make grids on new spatial locations ...</span></a>
-<a class="sourceLine" id="cb3-5" data-line-number="5"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>refined_prop,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6"><span class="co">#&gt;                 GC        PGC      M/TC        OSNs     EPL-IN</span></a>
-<a class="sourceLine" id="cb3-7" data-line-number="7"><span class="co">#&gt; Min.    0.07851589 0.09087208 0.1488377 0.003511894 0.03438214</span></a>
-<a class="sourceLine" id="cb3-8" data-line-number="8"><span class="co">#&gt; 1st Qu. 0.15017764 0.15881733 0.2454581 0.006704725 0.06048406</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="co">#&gt; Median  0.20711106 0.21732364 0.3301476 0.020666297 0.07524423</span></a>
-<a class="sourceLine" id="cb3-10" data-line-number="10"><span class="co">#&gt; Mean    0.28967101 0.22754708 0.3290853 0.077239654 0.07645695</span></a>
-<a class="sourceLine" id="cb3-11" data-line-number="11"><span class="co">#&gt; 3rd Qu. 0.44621818 0.29124548 0.4083566 0.100845986 0.09023413</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12"><span class="co">#&gt; Max.    0.66667620 0.45268291 0.5762444 0.462801464 0.14476322</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">##### For example, we set the initial number of grids to be 2000</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">CARD.imputation</span>(CARD_obj,<span class="at">NumGrids =</span> <span class="dv">2000</span>,<span class="at">ineibor =</span> <span class="dv">10</span>,<span class="at">exclude =</span> <span class="cn">NULL</span>)<span class="do">## print output</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## The rownames of locations are matched ...</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; ## Make grids on new spatial locations ...</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">apply</span>(CARD_obj<span class="sc">@</span>refined_prop,<span class="dv">2</span>,summary))</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt;                 GC        PGC      M/TC        OSNs     EPL-IN</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Min.    0.07851606 0.09087222 0.1488379 0.003511939 0.03438216</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 1st Qu. 0.15017781 0.15881741 0.2454582 0.006704792 0.06048405</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Median  0.20711115 0.21732367 0.3301476 0.020666343 0.07524422</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Mean    0.28967103 0.22754709 0.3290853 0.077239653 0.07645693</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; 3rd Qu. 0.44621805 0.29124545 0.4083565 0.100845965 0.09023408</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">#&gt; Max.    0.66667590 0.45268274 0.5762442 0.462801134 0.14476313</span></span></code></pre></div>
 </div>
 </section>
 

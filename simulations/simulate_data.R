@@ -19,10 +19,9 @@ ntotal <- 10
 ## Here, we split the scRNA-seq data into two sets: 
 ## one set  (50% cells, denoted as split1) was used to simulate the spatial transcriptomics count 
 ## while the other set (50% cells, denoted as split2) was used to evaluate the performance of deconvolution methods.
-## you can found the splited scRNAseq data in the folder here, the original dataset information can be found in the paper
+## All data for simulation is stored in https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g due to its large size
+
 setwd("./data/")
-## The splited scRNAseq data for simulation is stored in https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g due to its large size
-## Other data can be found in the https://github.com/YingMa0107/CARD-Analysis/tree/master/simulations 
 load("./split.scRNAseq.forSimu.RData")
 eset.sub.split1 = split$eset.sub.split1 ## simulate the data
 eset.sub.split2 = split$eset.sub.split2 ## use as the reference for downstream deconvolution analysis

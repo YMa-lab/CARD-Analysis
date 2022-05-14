@@ -112,7 +112,7 @@ generateSpatial_norep_fixedProp <- function(seed, eset.sub.split1, ct.varname, s
   temp.exprs <- exprs(eset.sub.split1)
   temp.nct <- Sample_random
   true.p = sweep(temp.nct,1,rowSums(temp.nct),"/")
-  ##### use mcapply since pbmcapply will randomly assign the seed
+  ##### Randomness in pbmclapply
   temp.pseudo = pbmclapply(1:nrow(temp.nct),function(isample){
       temp.sample = temp.nct[isample,]
       temp.sample.pseudo = sapply(ct.select,function(ict){

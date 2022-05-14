@@ -81,7 +81,7 @@ generateMultiN <- function(pattern_gp_label,ipt,ntotal,mix,ct.select){
     sample[index,] = t(sapply(index,function(i){rmultinom(1, ntotal, prob = prop[i,])}))
     }
 ####
-  return(list(sample = sample)
+  return(list(sample = sample))
 }
 
 generateSpatial_norep_fixedProp <- function(seed, eset.sub.split1, ct.varname, sample.varname,ct.select,sample.withRep = F,pattern_gp_label, ntotal,mix1,mix2,mix3){

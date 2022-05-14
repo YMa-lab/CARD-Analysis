@@ -16,30 +16,45 @@
 
 <title>SlideseqV2 hippocampus data Analysis</title>
 
+<script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
+// be compatible with the behavior of Pandoc < 2.8).
+document.addEventListener('DOMContentLoaded', function(e) {
+  var hs = document.querySelectorAll("div.section[class*='level'] > :first-child");
+  var i, h, a;
+  for (i = 0; i < hs.length; i++) {
+    h = hs[i];
+    if (!/^h[1-6]$/i.test(h.tagName)) continue;  // it should be a header h1-h6
+    a = h.attributes;
+    while (a.length > 0) h.removeAttribute(a[0].name);
+  }
+});
+</script>
 
 
 <style type="text/css">code{white-space: pre;}</style>
 <style type="text/css" data-origin="pandoc">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
 .sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; left: -4em; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
     position: relative; left: -1em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all; display: inline-block;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -48,9 +63,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -135,7 +150,8 @@ code span.ot { color: #007020; }
 
 
 <section class="page-header">
-<h1 class="title toc-ignore project-name">SlideseqV2 hippocampus data Analysis</h1>
+<h1 class="title toc-ignore project-name">SlideseqV2 hippocampus data
+Analysis</h1>
 <h4 class="author project-author">Ying Ma</h4>
 <h4 class="date project-date">May 24, 2021</h4>
 </section>
@@ -143,114 +159,82 @@ code span.ot { color: #007020; }
 
 
 <section class="main-content">
-<p>This is the analysis of the mouse olfactory bulb from Spatial Transcriptomics (ST) technique. The</p>
-<p>Due to the storage issue of github, the data that are needed to run this analsyis are stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google drive</a>.</p>
-<div id="load-the-data" class="section level2">
-<h2>load the data</h2>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">rm</span>(<span class="dt">list=</span><span class="kw">ls</span>())</a>
-<a class="sourceLine" id="cb1-2" data-line-number="2"><span class="kw">library</span>(SingleCellExperiment)</a>
-<a class="sourceLine" id="cb1-3" data-line-number="3"><span class="kw">library</span>(pbmcapply)</a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">library</span>(CARD)</a>
-<a class="sourceLine" id="cb1-5" data-line-number="5"><span class="co">### load the single cell RNA-seq data used as the reference for deconvolution</span></a>
-<a class="sourceLine" id="cb1-6" data-line-number="6"><span class="kw">load</span>(<span class="st">&quot;./Hippocampus.dge.sceset.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-7" data-line-number="7"><span class="co">### load the spatial data </span></a>
-<a class="sourceLine" id="cb1-8" data-line-number="8"><span class="kw">load</span>(<span class="st">&quot;./slideseqV2.count.RData&quot;</span>)</a>
-<a class="sourceLine" id="cb1-9" data-line-number="9"><span class="co">### set paramaters</span></a>
-<a class="sourceLine" id="cb1-10" data-line-number="10">ct.varname =<span class="st"> &quot;cellType&quot;</span></a>
-<a class="sourceLine" id="cb1-11" data-line-number="11">sample.varname =<span class="st"> &quot;sampleInfo&quot;</span></a>
-<a class="sourceLine" id="cb1-12" data-line-number="12">ct.select =<span class="st"> </span><span class="kw">as.character</span>(<span class="kw">unique</span>(<span class="kw">colData</span>(sce)<span class="op">$</span>cellType))</a>
-<a class="sourceLine" id="cb1-13" data-line-number="13">location &lt;-<span class="st"> </span><span class="kw">cbind.data.frame</span>(<span class="dt">x=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="dt">y=</span><span class="kw">as.numeric</span>(<span class="kw">sapply</span>(<span class="kw">strsplit</span>(<span class="kw">colnames</span>(slideseqV2),<span class="dt">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</a>
-<a class="sourceLine" id="cb1-14" data-line-number="14"><span class="kw">rownames</span>(location) =<span class="st"> </span><span class="kw">colnames</span>(slideseqV2)</a></code></pre></div>
-</div>
+<p>This is the analysis of the mouse olfactory bulb from Spatial
+Transcriptomics (ST) technique. The</p>
+<p>Due to the storage issue of github, the data that are needed to run
+this analsyis are stored on the <a href="https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing">google
+drive</a>. set ## load the data</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(<span class="at">list=</span><span class="fu">ls</span>())</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(SingleCellExperiment)</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(pbmcapply)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(CARD)</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="do">### load the single cell RNA-seq data used as the reference for deconvolution</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;./Hippocampus.dge.sceset.RData&quot;</span>)</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="do">### load the spatial data </span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">load</span>(<span class="st">&quot;./slideseqV2.count.RData&quot;</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="do">### set paramaters</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>ct.varname <span class="ot">=</span> <span class="st">&quot;cellType&quot;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>sample.varname <span class="ot">=</span> <span class="st">&quot;sampleInfo&quot;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>ct.select <span class="ot">=</span> <span class="fu">as.character</span>(<span class="fu">unique</span>(<span class="fu">colData</span>(sce)<span class="sc">$</span>cellType))</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>location <span class="ot">&lt;-</span> <span class="fu">cbind.data.frame</span>(<span class="at">x=</span><span class="fu">as.numeric</span>(<span class="fu">sapply</span>(<span class="fu">strsplit</span>(<span class="fu">colnames</span>(slideseqV2),<span class="at">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">1</span>)),<span class="at">y=</span><span class="fu">as.numeric</span>(<span class="fu">sapply</span>(<span class="fu">strsplit</span>(<span class="fu">colnames</span>(slideseqV2),<span class="at">split=</span><span class="st">&quot;x&quot;</span>),<span class="st">&quot;[&quot;</span>,<span class="dv">2</span>)))</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rownames</span>(location) <span class="ot">=</span> <span class="fu">colnames</span>(slideseqV2)</span></code></pre></div>
 <div id="deconvolution-with-card" class="section level2">
 <h2>Deconvolution with CARD</h2>
-<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb2-1" data-line-number="1"><span class="co">##### create CARD object</span></a>
-<a class="sourceLine" id="cb2-2" data-line-number="2">CARD_obj =<span class="st"> </span><span class="kw">createCARDObject</span>(</a>
-<a class="sourceLine" id="cb2-3" data-line-number="3">    <span class="dt">sc_count =</span> <span class="kw">assays</span>(sce)<span class="op">$</span>counts,</a>
-<a class="sourceLine" id="cb2-4" data-line-number="4">    <span class="dt">sc_meta =</span> <span class="kw">colData</span>(sce),</a>
-<a class="sourceLine" id="cb2-5" data-line-number="5">    <span class="dt">spatial_count =</span> slideseqV2,</a>
-<a class="sourceLine" id="cb2-6" data-line-number="6">    <span class="dt">spatial_location =</span> location,</a>
-<a class="sourceLine" id="cb2-7" data-line-number="7">    <span class="dt">ct.varname =</span> ct.varname,</a>
-<a class="sourceLine" id="cb2-8" data-line-number="8">    <span class="dt">ct.select =</span> ct.select,</a>
-<a class="sourceLine" id="cb2-9" data-line-number="9">    <span class="dt">sample.varname =</span> sample.varname,</a>
-<a class="sourceLine" id="cb2-10" data-line-number="10">    <span class="dt">minCountGene =</span> <span class="dv">100</span>,</a>
-<a class="sourceLine" id="cb2-11" data-line-number="11">    <span class="dt">minCountSpot =</span><span class="dv">5</span>) </a>
-<a class="sourceLine" id="cb2-12" data-line-number="12"><span class="co">##### delete the original file to save the memory</span></a>
-<a class="sourceLine" id="cb2-13" data-line-number="13"><span class="kw">rm</span>(sce)</a>
-<a class="sourceLine" id="cb2-14" data-line-number="14"><span class="kw">rm</span>(location)</a>
-<a class="sourceLine" id="cb2-15" data-line-number="15"><span class="kw">rm</span>(slideseqV2)</a>
-<a class="sourceLine" id="cb2-16" data-line-number="16"><span class="kw">gc</span>()</a>
-<a class="sourceLine" id="cb2-17" data-line-number="17"><span class="co">##### CARD deconvolution</span></a>
-<a class="sourceLine" id="cb2-18" data-line-number="18">CARD_obj =<span class="st"> </span><span class="kw">CARD_deconvolution</span>(CARD_obj)</a>
-<a class="sourceLine" id="cb2-19" data-line-number="19"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>Proportion_CARD,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb2-20" data-line-number="20">           Astrocyte          CA1          CA3 Cajal_Retzius      Choroid</a>
-<a class="sourceLine" id="cb2-21" data-line-number="21">Min.    <span class="fl">6.549115e-09</span> <span class="fl">3.342583e-07</span> <span class="fl">1.039900e-07</span>  <span class="fl">2.289722e-05</span> <span class="fl">1.400082e-09</span></a>
-<a class="sourceLine" id="cb2-22" data-line-number="22">1st Qu. <span class="fl">3.946229e-02</span> <span class="fl">1.543485e-02</span> <span class="fl">1.959387e-02</span>  <span class="fl">3.498084e-02</span> <span class="fl">7.285443e-03</span></a>
-<a class="sourceLine" id="cb2-23" data-line-number="23">Median  <span class="fl">1.265623e-01</span> <span class="fl">3.409539e-02</span> <span class="fl">4.399537e-02</span>  <span class="fl">5.956342e-02</span> <span class="fl">2.043235e-02</span></a>
-<a class="sourceLine" id="cb2-24" data-line-number="24">Mean    <span class="fl">1.991895e-01</span> <span class="fl">4.417949e-02</span> <span class="fl">5.716646e-02</span>  <span class="fl">6.355440e-02</span> <span class="fl">3.007703e-02</span></a>
-<a class="sourceLine" id="cb2-25" data-line-number="25">3rd Qu. <span class="fl">3.143433e-01</span> <span class="fl">6.066588e-02</span> <span class="fl">7.874296e-02</span>  <span class="fl">8.500185e-02</span> <span class="fl">4.026790e-02</span></a>
-<a class="sourceLine" id="cb2-26" data-line-number="26">Max.    <span class="fl">9.701665e-01</span> <span class="fl">3.325204e-01</span> <span class="fl">5.082367e-01</span>  <span class="fl">3.799464e-01</span> <span class="fl">6.277922e-01</span></a>
-<a class="sourceLine" id="cb2-27" data-line-number="27">              Denate Endothelial_Stalk Endothelial_Tip  Entorihinal</a>
-<a class="sourceLine" id="cb2-28" data-line-number="28">Min.    <span class="fl">6.657425e-07</span>      <span class="fl">6.163674e-07</span>    <span class="fl">1.139863e-05</span> <span class="fl">1.726510e-06</span></a>
-<a class="sourceLine" id="cb2-29" data-line-number="29">1st Qu. <span class="fl">1.934296e-02</span>      <span class="fl">7.137680e-03</span>    <span class="fl">1.472043e-02</span> <span class="fl">3.035579e-02</span></a>
-<a class="sourceLine" id="cb2-30" data-line-number="30">Median  <span class="fl">3.832424e-02</span>      <span class="fl">1.313161e-02</span>    <span class="fl">1.960011e-02</span> <span class="fl">6.652472e-02</span></a>
-<a class="sourceLine" id="cb2-31" data-line-number="31">Mean    <span class="fl">5.122470e-02</span>      <span class="fl">1.763982e-02</span>    <span class="fl">2.000251e-02</span> <span class="fl">7.519624e-02</span></a>
-<a class="sourceLine" id="cb2-32" data-line-number="32">3rd Qu. <span class="fl">6.657624e-02</span>      <span class="fl">2.159234e-02</span>    <span class="fl">2.419510e-02</span> <span class="fl">1.093491e-01</span></a>
-<a class="sourceLine" id="cb2-33" data-line-number="33">Max.    <span class="fl">4.374547e-01</span>      <span class="fl">3.277260e-01</span>    <span class="fl">1.743916e-01</span> <span class="fl">4.075676e-01</span></a>
-<a class="sourceLine" id="cb2-34" data-line-number="34">           Ependymal  Interneuron Microglia_Macrophages        Mural</a>
-<a class="sourceLine" id="cb2-35" data-line-number="35">Min.    <span class="fl">4.940973e-08</span> <span class="fl">1.387993e-06</span>          <span class="fl">9.052465e-07</span> <span class="fl">7.783994e-06</span></a>
-<a class="sourceLine" id="cb2-36" data-line-number="36">1st Qu. <span class="fl">6.840735e-03</span> <span class="fl">2.552179e-02</span>          <span class="fl">6.454247e-03</span> <span class="fl">1.763536e-02</span></a>
-<a class="sourceLine" id="cb2-37" data-line-number="37">Median  <span class="fl">1.253260e-02</span> <span class="fl">5.824671e-02</span>          <span class="fl">1.422332e-02</span> <span class="fl">2.553737e-02</span></a>
-<a class="sourceLine" id="cb2-38" data-line-number="38">Mean    <span class="fl">1.904020e-02</span> <span class="fl">7.735546e-02</span>          <span class="fl">4.015820e-02</span> <span class="fl">2.650752e-02</span></a>
-<a class="sourceLine" id="cb2-39" data-line-number="39">3rd Qu. <span class="fl">2.123995e-02</span> <span class="fl">1.073900e-01</span>          <span class="fl">3.480897e-02</span> <span class="fl">3.309739e-02</span></a>
-<a class="sourceLine" id="cb2-40" data-line-number="40">Max.    <span class="fl">7.583645e-01</span> <span class="fl">9.846139e-01</span>          <span class="fl">9.981785e-01</span> <span class="fl">2.545956e-01</span></a>
-<a class="sourceLine" id="cb2-41" data-line-number="41">        Neurogenesis Neuron.Slc17a6 Oligodendrocyte Polydendrocyte</a>
-<a class="sourceLine" id="cb2-42" data-line-number="42">Min.    <span class="fl">3.016224e-06</span>   <span class="fl">8.144565e-06</span>    <span class="fl">1.365415e-07</span>   <span class="fl">7.651204e-07</span></a>
-<a class="sourceLine" id="cb2-43" data-line-number="43">1st Qu. <span class="fl">1.505545e-02</span>   <span class="fl">3.158983e-02</span>    <span class="fl">3.084705e-02</span>   <span class="fl">1.439076e-02</span></a>
-<a class="sourceLine" id="cb2-44" data-line-number="44">Median  <span class="fl">2.435342e-02</span>   <span class="fl">6.115331e-02</span>    <span class="fl">7.147644e-02</span>   <span class="fl">2.352415e-02</span></a>
-<a class="sourceLine" id="cb2-45" data-line-number="45">Mean    <span class="fl">2.616867e-02</span>   <span class="fl">6.722673e-02</span>    <span class="fl">1.599255e-01</span>   <span class="fl">2.538756e-02</span></a>
-<a class="sourceLine" id="cb2-46" data-line-number="46">3rd Qu. <span class="fl">3.429981e-02</span>   <span class="fl">9.328253e-02</span>    <span class="fl">1.825281e-01</span>   <span class="fl">3.288397e-02</span></a>
-<a class="sourceLine" id="cb2-47" data-line-number="47">Max.    <span class="fl">1.774702e-01</span>   <span class="fl">4.313435e-01</span>    <span class="fl">9.992845e-01</span>   <span class="fl">4.629811e-01</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="do">##### create CARD object</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">createCARDObject</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">sc_count =</span> <span class="fu">assays</span>(sce)<span class="sc">$</span>counts,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">sc_meta =</span> <span class="fu">colData</span>(sce),</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">spatial_count =</span> slideseqV2,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="at">spatial_location =</span> location,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">ct.varname =</span> ct.varname,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="at">ct.select =</span> ct.select,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">sample.varname =</span> sample.varname,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">minCountGene =</span> <span class="dv">100</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">minCountSpot =</span><span class="dv">5</span>) </span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="do">##### delete the original file to save the memory</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(sce)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(location)</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="fu">rm</span>(slideseqV2)</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="fu">gc</span>()</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="do">##### CARD deconvolution</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">CARD_deconvolution</span>(CARD_obj)</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(CARD_obj<span class="sc">@</span>Proportion_CARD[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,])</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>              Astrocyte        CA1        CA3 Cajal_Retzius    Choroid</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fl">888.95</span>x3219<span class="fl">.5</span> <span class="fl">0.0991712</span> <span class="fl">0.03364185</span> <span class="fl">0.03650123</span>    <span class="fl">0.09582946</span> <span class="fl">0.06029124</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="fl">4762.2</span>x5020<span class="fl">.4</span> <span class="fl">0.1848699</span> <span class="fl">0.02340987</span> <span class="fl">0.01151686</span>    <span class="fl">0.11039367</span> <span class="fl">0.06643968</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                  Denate Endothelial_Stalk Endothelial_Tip Entorihinal</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="fl">888.95</span>x3219<span class="fl">.5</span> <span class="fl">0.03576194</span>        <span class="fl">0.01516197</span>      <span class="fl">0.02458487</span>  <span class="fl">0.16698704</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="fl">4762.2</span>x5020<span class="fl">.4</span> <span class="fl">0.02638077</span>        <span class="fl">0.02124969</span>      <span class="fl">0.02608303</span>  <span class="fl">0.08141408</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>               Ependymal Interneuron Microglia_Macrophages      Mural</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="fl">888.95</span>x3219<span class="fl">.5</span> <span class="fl">0.01126246</span>  <span class="fl">0.13054963</span>            <span class="fl">0.02372019</span> <span class="fl">0.03194189</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="fl">4762.2</span>x5020<span class="fl">.4</span> <span class="fl">0.01866272</span>  <span class="fl">0.09362967</span>            <span class="fl">0.01305731</span> <span class="fl">0.03856378</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>              Neurogenesis Neuron.Slc17a6 Oligodendrocyte Polydendrocyte</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="fl">888.95</span>x3219<span class="fl">.5</span>   <span class="fl">0.02822858</span>     <span class="fl">0.11863522</span>      <span class="fl">0.06500265</span>     <span class="fl">0.02272858</span></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="fl">4762.2</span>x5020<span class="fl">.4</span>   <span class="fl">0.03033911</span>     <span class="fl">0.06998887</span>      <span class="fl">0.15760321</span>     <span class="fl">0.02639780</span></span></code></pre></div>
 </div>
 <div id="construact-a-refined-spatial-map-by-card" class="section level2">
 <h2>Construact a refined spatial map by CARD</h2>
-<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><a class="sourceLine" id="cb3-1" data-line-number="1"><span class="co">##### For example, we set the initial number of grids to be 2000</span></a>
-<a class="sourceLine" id="cb3-2" data-line-number="2"><span class="co">##### There are some locations that are outside of the main circle of the tissue, we should exclude them to avoid its impact on the tissue shape detection</span></a>
-<a class="sourceLine" id="cb3-3" data-line-number="3">exclude =<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;1209.9x5751.6&quot;</span>,<span class="st">&quot;932.04x5567.2&quot;</span>,<span class="st">&quot;221.35x4978.6&quot;</span>,<span class="st">&quot;803.66x4850.6&quot;</span>,<span class="st">&quot;371.65x4474.5&quot;</span>,<span class="st">&quot;252.32x2760.2&quot;</span>,</a>
-<a class="sourceLine" id="cb3-4" data-line-number="4">            <span class="st">&quot;341.18x2331.2&quot;</span>,<span class="st">&quot;157.22x1996.2&quot;</span>,<span class="st">&quot;465.7x1602&quot;</span>,<span class="st">&quot;1435.2x270.75&quot;</span>,<span class="st">&quot;2100.8x501.66&quot;</span>,<span class="st">&quot;2211.5x153.96&quot;</span>,</a>
-<a class="sourceLine" id="cb3-5" data-line-number="5">            <span class="st">&quot;3853.4x215.24&quot;</span>,<span class="st">&quot;5414.3x970.87&quot;</span>,<span class="st">&quot;1339.1x5019.2&quot;</span>,<span class="st">&quot;1541.6x5370.7&quot;</span>,<span class="st">&quot;1536.8x5341.8&quot;</span>,<span class="st">&quot;1508.8x5254.6&quot;</span>,</a>
-<a class="sourceLine" id="cb3-6" data-line-number="6">            <span class="st">&quot;1498.4x5244.1&quot;</span>,<span class="st">&quot;1593.6x5155.4&quot;</span>,<span class="st">&quot;1607x5144.9&quot;</span>,<span class="st">&quot;1651.8x5064.9&quot;</span>,<span class="st">&quot;1481.5x5229.1&quot;</span>,<span class="st">&quot;1496x5223.5&quot;</span>,</a>
-<a class="sourceLine" id="cb3-7" data-line-number="7">            <span class="st">&quot;1508.4x5212.2&quot;</span>,<span class="st">&quot;1522.7x5210.5&quot;</span>,<span class="st">&quot;685.08x5145.3&quot;</span>,<span class="st">&quot;1518.8x5225.6&quot;</span>)</a>
-<a class="sourceLine" id="cb3-8" data-line-number="8">CARD_obj =<span class="st"> </span><span class="kw">CARD.imputation</span>(CARD_obj,<span class="dt">NumGrids =</span> <span class="dv">10000</span>,<span class="dt">ineibor =</span> <span class="dv">10</span>,<span class="dt">exclude =</span> exclude)<span class="co">## print output</span></a>
-<a class="sourceLine" id="cb3-9" data-line-number="9"><span class="kw">print</span>(<span class="kw">apply</span>(CARD_obj<span class="op">@</span>refined_prop,<span class="dv">2</span>,summary))</a>
-<a class="sourceLine" id="cb3-10" data-line-number="10">          Astrocyte         CA1         CA3 Cajal_Retzius      Choroid</a>
-<a class="sourceLine" id="cb3-11" data-line-number="11">Min.    <span class="fl">0.005922897</span> <span class="fl">0.001597862</span> <span class="fl">0.001823296</span>   <span class="fl">0.003806419</span> <span class="fl">0.0007726319</span></a>
-<a class="sourceLine" id="cb3-12" data-line-number="12">1st Qu. <span class="fl">0.114313721</span> <span class="fl">0.022058653</span> <span class="fl">0.029652286</span>   <span class="fl">0.039745235</span> <span class="fl">0.0159930172</span></a>
-<a class="sourceLine" id="cb3-13" data-line-number="13">Median  <span class="fl">0.195383796</span> <span class="fl">0.033973384</span> <span class="fl">0.045541417</span>   <span class="fl">0.056829191</span> <span class="fl">0.0236263402</span></a>
-<a class="sourceLine" id="cb3-14" data-line-number="14">Mean    <span class="fl">0.223420475</span> <span class="fl">0.040306340</span> <span class="fl">0.052396888</span>   <span class="fl">0.058586805</span> <span class="fl">0.0272901642</span></a>
-<a class="sourceLine" id="cb3-15" data-line-number="15">3rd Qu. <span class="fl">0.304613124</span> <span class="fl">0.050348515</span> <span class="fl">0.064235562</span>   <span class="fl">0.071852198</span> <span class="fl">0.0327888184</span></a>
-<a class="sourceLine" id="cb3-16" data-line-number="16">Max.    <span class="fl">0.721814648</span> <span class="fl">0.214190526</span> <span class="fl">0.277532506</span>   <span class="fl">0.181348295</span> <span class="fl">0.3426269220</span></a>
-<a class="sourceLine" id="cb3-17" data-line-number="17">             Denate Endothelial_Stalk Endothelial_Tip Entorihinal   Ependymal</a>
-<a class="sourceLine" id="cb3-18" data-line-number="18">Min.    <span class="fl">0.001492004</span>       <span class="fl">0.001225552</span>     <span class="fl">0.003691385</span> <span class="fl">0.004028136</span> <span class="fl">0.001546125</span></a>
-<a class="sourceLine" id="cb3-19" data-line-number="19">1st Qu. <span class="fl">0.026665035</span>       <span class="fl">0.012139720</span>     <span class="fl">0.016119058</span> <span class="fl">0.036205214</span> <span class="fl">0.011179056</span></a>
-<a class="sourceLine" id="cb3-20" data-line-number="20">Median  <span class="fl">0.039172231</span>       <span class="fl">0.015515290</span>     <span class="fl">0.018723147</span> <span class="fl">0.063983022</span> <span class="fl">0.014191224</span></a>
-<a class="sourceLine" id="cb3-21" data-line-number="21">Mean    <span class="fl">0.047727737</span>       <span class="fl">0.017213807</span>     <span class="fl">0.019177271</span> <span class="fl">0.067869157</span> <span class="fl">0.017652824</span></a>
-<a class="sourceLine" id="cb3-22" data-line-number="22">3rd Qu. <span class="fl">0.057920302</span>       <span class="fl">0.020085270</span>     <span class="fl">0.021359803</span> <span class="fl">0.093526214</span> <span class="fl">0.018326499</span></a>
-<a class="sourceLine" id="cb3-23" data-line-number="23">Max.    <span class="fl">0.278560882</span>       <span class="fl">0.121329785</span>     <span class="fl">0.076191319</span> <span class="fl">0.243323790</span> <span class="fl">0.429642236</span></a>
-<a class="sourceLine" id="cb3-24" data-line-number="24">        Interneuron Microglia_Macrophages       Mural Neurogenesis</a>
-<a class="sourceLine" id="cb3-25" data-line-number="25">Min.    <span class="fl">0.003557874</span>           <span class="fl">0.002610908</span> <span class="fl">0.004385053</span>  <span class="fl">0.001484315</span></a>
-<a class="sourceLine" id="cb3-26" data-line-number="26">1st Qu. <span class="fl">0.036059757</span>           <span class="fl">0.019329866</span> <span class="fl">0.019400466</span>  <span class="fl">0.019128140</span></a>
-<a class="sourceLine" id="cb3-27" data-line-number="27">Median  <span class="fl">0.064367829</span>           <span class="fl">0.030875398</span> <span class="fl">0.024897793</span>  <span class="fl">0.024498384</span></a>
-<a class="sourceLine" id="cb3-28" data-line-number="28">Mean    <span class="fl">0.069242687</span>           <span class="fl">0.045367774</span> <span class="fl">0.024913262</span>  <span class="fl">0.024925895</span></a>
-<a class="sourceLine" id="cb3-29" data-line-number="29">3rd Qu. <span class="fl">0.096064907</span>           <span class="fl">0.052786227</span> <span class="fl">0.029798087</span>  <span class="fl">0.029966835</span></a>
-<a class="sourceLine" id="cb3-30" data-line-number="30">Max.    <span class="fl">0.304925470</span>           <span class="fl">0.509944882</span> <span class="fl">0.097342172</span>  <span class="fl">0.079491193</span></a>
-<a class="sourceLine" id="cb3-31" data-line-number="31">        Neuron.Slc17a6 Oligodendrocyte Polydendrocyte</a>
-<a class="sourceLine" id="cb3-32" data-line-number="32">Min.       <span class="fl">0.003652488</span>      <span class="fl">0.01754259</span>    <span class="fl">0.003042927</span></a>
-<a class="sourceLine" id="cb3-33" data-line-number="33">1st Qu.    <span class="fl">0.034624414</span>      <span class="fl">0.07292051</span>    <span class="fl">0.018300064</span></a>
-<a class="sourceLine" id="cb3-34" data-line-number="34">Median     <span class="fl">0.057579538</span>      <span class="fl">0.11300916</span>    <span class="fl">0.023157172</span></a>
-<a class="sourceLine" id="cb3-35" data-line-number="35">Mean       <span class="fl">0.061045350</span>      <span class="fl">0.17893453</span>    <span class="fl">0.023929035</span></a>
-<a class="sourceLine" id="cb3-36" data-line-number="36">3rd Qu.    <span class="fl">0.081308099</span>      <span class="fl">0.21311882</span>    <span class="fl">0.028546762</span></a>
-<a class="sourceLine" id="cb3-37" data-line-number="37">Max.       <span class="fl">0.187290646</span>      <span class="fl">0.93170656</span>    <span class="fl">0.085738448</span></a></code></pre></div>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="do">##### For example, we set the initial number of grids to be 2000</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="do">##### There are some locations that are outside of the main circle of the tissue, we should exclude them to avoid its impact on the tissue shape detection</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>exclude <span class="ot">=</span> <span class="fu">c</span>(<span class="st">&quot;1209.9x5751.6&quot;</span>,<span class="st">&quot;932.04x5567.2&quot;</span>,<span class="st">&quot;221.35x4978.6&quot;</span>,<span class="st">&quot;803.66x4850.6&quot;</span>,<span class="st">&quot;371.65x4474.5&quot;</span>,<span class="st">&quot;252.32x2760.2&quot;</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;341.18x2331.2&quot;</span>,<span class="st">&quot;157.22x1996.2&quot;</span>,<span class="st">&quot;465.7x1602&quot;</span>,<span class="st">&quot;1435.2x270.75&quot;</span>,<span class="st">&quot;2100.8x501.66&quot;</span>,<span class="st">&quot;2211.5x153.96&quot;</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;3853.4x215.24&quot;</span>,<span class="st">&quot;5414.3x970.87&quot;</span>,<span class="st">&quot;1339.1x5019.2&quot;</span>,<span class="st">&quot;1541.6x5370.7&quot;</span>,<span class="st">&quot;1536.8x5341.8&quot;</span>,<span class="st">&quot;1508.8x5254.6&quot;</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;1498.4x5244.1&quot;</span>,<span class="st">&quot;1593.6x5155.4&quot;</span>,<span class="st">&quot;1607x5144.9&quot;</span>,<span class="st">&quot;1651.8x5064.9&quot;</span>,<span class="st">&quot;1481.5x5229.1&quot;</span>,<span class="st">&quot;1496x5223.5&quot;</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>            <span class="st">&quot;1508.4x5212.2&quot;</span>,<span class="st">&quot;1522.7x5210.5&quot;</span>,<span class="st">&quot;685.08x5145.3&quot;</span>,<span class="st">&quot;1518.8x5225.6&quot;</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>CARD_obj <span class="ot">=</span> <span class="fu">CARD.imputation</span>(CARD_obj,<span class="at">NumGrids =</span> <span class="dv">10000</span>,<span class="at">ineibor =</span> <span class="dv">10</span>,<span class="at">exclude =</span> exclude)<span class="do">## print output</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="fu">print</span>(CARD_obj<span class="sc">@</span>refined_prop[<span class="dv">1</span><span class="sc">:</span><span class="dv">2</span>,])</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>         Astrocyte        CA1        CA3 Cajal_Retzius    Choroid     Denate</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>3022x786 <span class="fl">0.1080091</span> <span class="fl">0.05208850</span> <span class="fl">0.02684785</span>    <span class="fl">0.10101177</span> <span class="fl">0.03268236</span> <span class="fl">0.06272963</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>3070x786 <span class="fl">0.1130811</span> <span class="fl">0.05296805</span> <span class="fl">0.06285999</span>    <span class="fl">0.08734442</span> <span class="fl">0.03575684</span> <span class="fl">0.06352145</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>         Endothelial_Stalk Endothelial_Tip Entorihinal  Ependymal Interneuron</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>3022x786        <span class="fl">0.02115726</span>      <span class="fl">0.02742217</span>  <span class="fl">0.08552018</span> <span class="fl">0.00697323</span>  <span class="fl">0.07848406</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>3070x786        <span class="fl">0.01632546</span>      <span class="fl">0.03008589</span>  <span class="fl">0.08778664</span> <span class="fl">0.01629819</span>  <span class="fl">0.05780146</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>         Microglia_Macrophages      Mural Neurogenesis Neuron.Slc17a6</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>3022x786            <span class="fl">0.01245631</span> <span class="fl">0.03108299</span>   <span class="fl">0.03949124</span>      <span class="fl">0.1005717</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>3070x786            <span class="fl">0.04920186</span> <span class="fl">0.03598855</span>   <span class="fl">0.03361353</span>      <span class="fl">0.1025258</span></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>         Oligodendrocyte Polydendrocyte</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>3022x786       <span class="fl">0.1937261</span>     <span class="fl">0.01974551</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>3070x786       <span class="fl">0.1307404</span>     <span class="fl">0.02410037</span></span></code></pre></div>
 </div>
 </section>
 

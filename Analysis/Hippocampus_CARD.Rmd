@@ -1,0 +1,98 @@
+---
+title: "SlideseqV2 hippocampus data Analysis"
+author: "Ying Ma"
+date: May 24, 2021
+output:
+  prettydoc::html_pretty:
+    theme: HPSTR 
+    highlight: github
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+This is the analysis of the mouse olfactory bulb from Spatial Transcriptomics (ST) technique. The 
+ 
+Due to the storage issue of github, the data that are needed to run this analsyis are stored on the [google drive](https://drive.google.com/drive/folders/1wRPxn1YI7f1oUw8eC42htXMjTUqyIT1g?usp=sharing). 
+set
+## load the data
+
+```{r message=FALSE, warnings=F, eval=F}
+rm(list=ls())
+library(SingleCellExperiment)
+library(pbmcapply)
+library(CARD)
+### load the single cell RNA-seq data used as the reference for deconvolution
+load("./Hippocampus.dge.sceset.RData")
+### load the spatial data 
+load("./slideseqV2.count.RData")
+### set paramaters
+ct.varname = "cellType"
+sample.varname = "sampleInfo"
+ct.select = as.character(unique(colData(sce)$cellType))
+location <- cbind.data.frame(x=as.numeric(sapply(strsplit(colnames(slideseqV2),split="x"),"[",1)),y=as.numeric(sapply(strsplit(colnames(slideseqV2),split="x"),"[",2)))
+rownames(location) = colnames(slideseqV2)
+```
+
+## Deconvolution with CARD
+```{r eval=F,warnings=F}
+##### create CARD object
+CARD_obj = createCARDObject(
+	sc_count = assays(sce)$counts,
+	sc_meta = colData(sce),
+	spatial_count = slideseqV2,
+	spatial_location = location,
+	ct.varname = ct.varname,
+	ct.select = ct.select,
+	sample.varname = sample.varname,
+	minCountGene = 100,
+	minCountSpot =5) 
+##### delete the original file to save the memory
+rm(sce)
+rm(location)
+rm(slideseqV2)
+gc()
+##### CARD deconvolution
+CARD_obj = CARD_deconvolution(CARD_obj)
+print(CARD_obj@Proportion_CARD[1:2,])
+              Astrocyte        CA1        CA3 Cajal_Retzius    Choroid
+888.95x3219.5 0.0991712 0.03364185 0.03650123    0.09582946 0.06029124
+4762.2x5020.4 0.1848699 0.02340987 0.01151686    0.11039367 0.06643968
+                  Denate Endothelial_Stalk Endothelial_Tip Entorihinal
+888.95x3219.5 0.03576194        0.01516197      0.02458487  0.16698704
+4762.2x5020.4 0.02638077        0.02124969      0.02608303  0.08141408
+               Ependymal Interneuron Microglia_Macrophages      Mural
+888.95x3219.5 0.01126246  0.13054963            0.02372019 0.03194189
+4762.2x5020.4 0.01866272  0.09362967            0.01305731 0.03856378
+              Neurogenesis Neuron.Slc17a6 Oligodendrocyte Polydendrocyte
+888.95x3219.5   0.02822858     0.11863522      0.06500265     0.02272858
+4762.2x5020.4   0.03033911     0.06998887      0.15760321     0.02639780
+```
+
+## Construact a refined spatial map by CARD
+```{r eval=F,warnings=F}
+##### For example, we set the initial number of grids to be 2000
+##### There are some locations that are outside of the main circle of the tissue, we should exclude them to avoid its impact on the tissue shape detection
+exclude = c("1209.9x5751.6","932.04x5567.2","221.35x4978.6","803.66x4850.6","371.65x4474.5","252.32x2760.2",
+            "341.18x2331.2","157.22x1996.2","465.7x1602","1435.2x270.75","2100.8x501.66","2211.5x153.96",
+            "3853.4x215.24","5414.3x970.87","1339.1x5019.2","1541.6x5370.7","1536.8x5341.8","1508.8x5254.6",
+            "1498.4x5244.1","1593.6x5155.4","1607x5144.9","1651.8x5064.9","1481.5x5229.1","1496x5223.5",
+            "1508.4x5212.2","1522.7x5210.5","685.08x5145.3","1518.8x5225.6")
+CARD_obj = CARD.imputation(CARD_obj,NumGrids = 10000,ineibor = 10,exclude = exclude)## print output
+print(CARD_obj@refined_prop[1:2,])
+         Astrocyte        CA1        CA3 Cajal_Retzius    Choroid     Denate
+3022x786 0.1080091 0.05208850 0.02684785    0.10101177 0.03268236 0.06272963
+3070x786 0.1130811 0.05296805 0.06285999    0.08734442 0.03575684 0.06352145
+         Endothelial_Stalk Endothelial_Tip Entorihinal  Ependymal Interneuron
+3022x786        0.02115726      0.02742217  0.08552018 0.00697323  0.07848406
+3070x786        0.01632546      0.03008589  0.08778664 0.01629819  0.05780146
+         Microglia_Macrophages      Mural Neurogenesis Neuron.Slc17a6
+3022x786            0.01245631 0.03108299   0.03949124      0.1005717
+3070x786            0.04920186 0.03598855   0.03361353      0.1025258
+         Oligodendrocyte Polydendrocyte
+3022x786       0.1937261     0.01974551
+3070x786       0.1307404     0.02410037

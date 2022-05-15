@@ -130,7 +130,7 @@ generateSpatial_norep_fixedProp <- function(seed, eset.sub.split1, ct.varname, s
           }
       })
       rowSums(temp.sample.pseudo)
-},mc.cores = 70,mc.set.seed = F)
+},mc.cores = 70,mc.set.seed = F) ## Set the number of cores that can be used in the system
   temp.pseudo = do.call("cbind",temp.pseudo)
   colnames(temp.pseudo) = rownames(Sample_random)
   rownames(temp.pseudo) = rownames(temp.exprs)

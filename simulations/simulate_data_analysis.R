@@ -139,7 +139,7 @@ ct.select.similar = c("Astrocytes","Neuron","Oligodendrocytes","Endothelial","Mi
 ## ct.select.original = c("Astrocytes","Neurons","Oligos","Vascular","Immune","Ependymal")
 ct.varname = "cellType"
 sample.varname = "sampleID"
-sc_eset.scenario5 = sc_eset.scenario5[,pData(sc_eset.scenario5)[,ct.varname] %in% ct.select]
+sc_eset.scenario5 = sc_eset.scenario5[,pData(sc_eset.scenario5)[,ct.varname] %in% ct.select.similar]
 load("./simulated_data_Figure2/sim.pseudo.MOB.n10.cellType6.Mixnoise0.repeat3.RData")
 ## since we use the first split to generate the simulation, for evaluating the robustness of CARD, we use the second split to do the devconovluton analysis
 spatial_location = cbind.data.frame(x=as.numeric(sapply(strsplit(as.character(colnames(spatial.pseudo$pseudo.data)),split="x"),"[",1)),
